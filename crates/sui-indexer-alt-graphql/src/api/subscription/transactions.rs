@@ -28,6 +28,7 @@ use crate::scope::Scope;
 use crate::task::streaming::ProcessedCheckpoint;
 use crate::task::streaming::StreamedCaches;
 
+use super::TransactionSubscriptionEdge;
 use super::scan_then_live::Subscribable;
 
 impl Subscribable for Transaction {
@@ -35,9 +36,14 @@ impl Subscribable for Transaction {
     type Cursor = CTransaction;
     type Filter = TransactionFilter;
     type ScanItem = v2::ExecutedTransaction;
+    type Output = TransactionSubscriptionEdge;
 
     fn subscription_type() -> &'static str {
         "transactions"
+    }
+
+    fn output(cursor: String, node: Option<Transaction>) -> TransactionSubscriptionEdge {
+        TransactionSubscriptionEdge { cursor, node }
     }
 
     fn scan<'a>(
@@ -86,5 +92,14 @@ impl Subscribable for Transaction {
             edges.push(Edge::new(cursor, transaction));
         }
         Ok(edges)
+    }
+
+    fn boundary_after(checkpoint: &ProcessedCheckpoint) -> Option<CTransaction> {
+        // `network_total_transactions` counts through this checkpoint, so it is the sequence number
+        // of the next checkpoint's first transaction.
+        Some(TransactionToken::boundary(
+            checkpoint.summary.sequence_number + 1,
+            checkpoint.summary.network_total_transactions,
+        ))
     }
 }

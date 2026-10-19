@@ -30,6 +30,7 @@ use crate::scope::Scope;
 use crate::task::streaming::ProcessedCheckpoint;
 use crate::task::streaming::StreamedCaches;
 
+use super::EventSubscriptionEdge;
 use super::scan_then_live::Subscribable;
 
 impl Subscribable for Event {
@@ -37,9 +38,14 @@ impl Subscribable for Event {
     type Cursor = CEvent;
     type Filter = EventFilter;
     type ScanItem = v2::Event;
+    type Output = EventSubscriptionEdge;
 
     fn subscription_type() -> &'static str {
         "events"
+    }
+
+    fn output(cursor: String, node: Option<Event>) -> EventSubscriptionEdge {
+        EventSubscriptionEdge { cursor, node }
     }
 
     fn scan<'a>(
@@ -106,5 +112,15 @@ impl Subscribable for Event {
             }
         }
         Ok(edges)
+    }
+
+    fn boundary_after(checkpoint: &ProcessedCheckpoint) -> Option<CEvent> {
+        // `network_total_transactions` counts through this checkpoint, so it is the sequence number
+        // of the next checkpoint's first transaction, whose first event is index 0.
+        Some(EventToken::boundary(
+            checkpoint.summary.sequence_number + 1,
+            checkpoint.summary.network_total_transactions,
+            0,
+        ))
     }
 }
