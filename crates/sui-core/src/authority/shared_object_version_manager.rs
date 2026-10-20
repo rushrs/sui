@@ -689,6 +689,7 @@ fn get_or_init_versions<'a>(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use sui_macros::sim_test;
 
     use crate::authority::AuthorityState;
     use crate::authority::shared_object_version_manager::{
@@ -732,7 +733,7 @@ mod tests {
         )
     }
 
-    #[tokio::test]
+    #[sim_test]
     async fn test_assign_versions_from_consensus_basic() {
         let shared_object = Object::shared_for_testing();
         let id = shared_object.id();
@@ -822,7 +823,7 @@ mod tests {
         );
     }
 
-    #[tokio::test]
+    #[sim_test]
     async fn test_forwarding_registry_version_follows_consensus_order() {
         let authority = TestAuthorityBuilder::new().build().await;
         let epoch_store = authority.epoch_store_for_testing();
@@ -895,7 +896,7 @@ mod tests {
         );
     }
 
-    #[tokio::test]
+    #[sim_test]
     async fn test_forwarding_registry_declared_by_cancelled_transaction() {
         let authority = TestAuthorityBuilder::new().build().await;
         let epoch_store = authority.epoch_store_for_testing();
@@ -968,7 +969,7 @@ mod tests {
         );
     }
 
-    #[tokio::test]
+    #[sim_test]
     async fn test_forwarding_registry_version_from_effects() {
         let authority = TestAuthorityBuilder::new().build().await;
         let epoch_store = authority.epoch_store_for_testing();
@@ -1040,7 +1041,7 @@ mod tests {
         );
     }
 
-    #[tokio::test]
+    #[sim_test]
     async fn test_assign_versions_from_consensus_with_randomness() {
         let authority = TestAuthorityBuilder::new().build().await;
         let epoch_store = authority.epoch_store_for_testing();
@@ -1150,7 +1151,7 @@ mod tests {
     }
 
     // Tests shared object version assignment for cancelled transaction.
-    #[tokio::test]
+    #[sim_test]
     async fn test_assign_versions_from_consensus_with_cancellation() {
         let shared_object_1 = Object::shared_for_testing();
         let shared_object_2 = Object::shared_for_testing();
@@ -1339,7 +1340,7 @@ mod tests {
         );
     }
 
-    #[tokio::test]
+    #[sim_test]
     async fn test_assign_versions_from_effects() {
         let shared_object = Object::shared_for_testing();
         let id = shared_object.id();
@@ -1571,7 +1572,7 @@ mod tests {
         }
     }
 
-    #[tokio::test]
+    #[sim_test]
     async fn test_assign_versions_from_consensus_with_withdraws_simple() {
         // Note that we don't need a shared object to trigger withdraw version assignment.
         // In fact it is important that this works without a shared object.
@@ -1612,7 +1613,7 @@ mod tests {
         );
     }
 
-    #[tokio::test]
+    #[sim_test]
     async fn test_assign_versions_from_consensus_with_multiple_withdraws_and_settlements() {
         // Test with multiple withdrawals and multiple settlements, with settlement as the last transaction
         let mut ctx = WithdrawTestContext::new().await;
@@ -1695,7 +1696,7 @@ mod tests {
         );
     }
 
-    #[tokio::test]
+    #[sim_test]
     async fn test_assign_versions_from_consensus_with_withdraw_and_shared_object() {
         // Test that a transaction can have both a withdrawal and use a shared object
         let mut ctx = WithdrawTestContext::new().await;
